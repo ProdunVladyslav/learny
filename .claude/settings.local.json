@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:/Users/produ/PycharmProjects/learny -path ./.venv -prune -o -name *.html -print)"
+    ]
+  }
+}

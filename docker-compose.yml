@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    container_name: learny_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: learny
+      POSTGRES_USER: learny_user
+      POSTGRES_PASSWORD: learny_pass
+    ports:
+      - "5448:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learny_user -d learny"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: learny_app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://learny_user:learny_pass@db:5432/learny
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:

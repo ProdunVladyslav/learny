@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In — flashcards{% endblock %}
+
+{% block body_class %}auth-layout{% endblock %}
+
+{% block body_content %}
+
+  <!-- LEFT: branding panel -->
+  <div class="left left--login">
+    <div class="orb orb-login-1"></div>
+    <div class="orb orb-login-2"></div>
+
+    <div class="brand">flash<span>•</span>cards</div>
+
+    <div class="hero-text">
+      <h1>Learn faster.<br><em>Remember more.</em></h1>
+      <p>Your smart flashcard system that adapts to how you learn and helps you master any topic.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item"><strong>50K+</strong><span>Active learners</span></div>
+      <div class="stat-item"><strong>2M+</strong><span>Cards studied</span></div>
+      <div class="stat-item"><strong>94%</strong><span>Retention rate</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: login form -->
+  <div class="right">
+    <div class="form-card">
+      <h2>Welcome back</h2>
+      <p class="sub">Sign in with your username or email</p>
+
+      {% if error %}
+        <div class="error-box">{{ error }}</div>
+      {% endif %}
+      {% for message in messages %}
+        <div class="error-box">{{ message }}</div>
+      {% endfor %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="id_username">Username or Email</label>
+          <input type="text" name="username" id="id_username"
+            placeholder="alice or alice@example.com"
+            autocomplete="username" autofocus />
+        </div>
+
+        <div class="field">
+          <label for="id_password">Password</label>
+          <input type="password" name="password" id="id_password"
+            placeholder="••••••••"
+            autocomplete="current-password" />
+        </div>
+
+        <div class="row-between">
+          <label>
+            <input type="checkbox" name="remember_me" />
+            Remember me
+          </label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <input type="hidden" name="next" value="{{ next }}" />
+        <button type="submit" class="btn">Sign In</button>
+      </form>
+
+      <div class="divider">or</div>
+      <p class="form-footer-link">Don't have an account? <a href="{% url 'signup' %}">Create one</a></p>
+    </div>
+  </div>
+
+{% endblock body_content %}

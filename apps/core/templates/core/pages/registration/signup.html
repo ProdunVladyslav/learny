@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account — flashcards{% endblock %}
+
+{% block body_class %}auth-layout{% endblock %}
+
+{% block body_content %}
+
+  <!-- LEFT: branding panel -->
+  <div class="left left--signup">
+    <div class="orb orb-signup-1"></div>
+    <div class="orb orb-signup-2"></div>
+    <div class="orb orb-signup-3"></div>
+
+    <div class="brand">flash<span>•</span>cards</div>
+
+    <div class="tagline">
+      <div class="eyebrow">Not just flashcards</div>
+      <h2>Your brain's<br><em>ultimate upgrade.</em></h2>
+      <p>We built a learning system that adapts to you — powered by spaced repetition, AI-generated hints, and real progress tracking.</p>
+    </div>
+
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(108,99,255,0.12);color:var(--accent2)">⚡</div>
+        <div class="feature-text">
+          <strong>Spaced Repetition Engine</strong>
+          <span>Cards resurface exactly when you're about to forget them. Science-backed memory optimization.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(52,211,153,0.12);color:var(--green)">🧠</div>
+        <div class="feature-text">
+          <strong>AI-Powered Study Assistant</strong>
+          <span>Stuck on a card? Get instant hints, explanations, and related examples generated on the fly.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(251,191,36,0.12);color:var(--amber)">📊</div>
+        <div class="feature-text">
+          <strong>Deep Progress Analytics</strong>
+          <span>Visualize your retention curves, weak spots, and daily streaks with beautiful charts.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(167,139,250,0.12);color:#c4b5fd">🌍</div>
+        <div class="feature-text">
+          <strong>50,000+ Shared Decks</strong>
+          <span>Instantly import community decks for languages, science, history, coding, and more.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-block">
+      <div class="quote-text" id="quoteText">"The more that you read, the more things you will know."</div>
+      <div class="quote-author" id="quoteAuthor">— Dr. Seuss</div>
+      <div class="quote-dots" id="quoteDots"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: signup form -->
+  <div class="right">
+    <div class="form-card">
+      <h2>Create account</h2>
+      <p class="sub">Free forever. No credit card needed.</p>
+
+      {% if form.errors %}
+        <div class="error-box">Please fix the errors below and try again.</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="id_email">Email Address</label>
+          <input type="email" name="email" id="id_email"
+            placeholder="alice@example.com"
+            value="{{ form.email.value|default:'' }}" />
+          {% if form.email.errors %}
+            <div class="field-error">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label for="id_username">Username</label>
+          <input type="text" name="username" id="id_username"
+            placeholder="alice_learns"
+            value="{{ form.username.value|default:'' }}" />
+          {% if form.username.errors %}
+            <div class="field-error">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label for="id_password1">Password</label>
+          <input type="password" name="password1" id="id_password1"
+            placeholder="Min. 8 characters"
+            oninput="checkStrength(this.value)" />
+          {% if form.password1.errors %}
+            <div class="field-error">{{ form.password1.errors.0 }}</div>
+          {% endif %}
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="strength-label" id="strengthLabel">Enter a password</div>
+        </div>
+
+        <div class="field">
+          <label for="id_password2">Confirm Password</label>
+          <input type="password" name="password2" id="id_password2"
+            placeholder="Repeat your password" />
+          {% if form.password2.errors %}
+            <div class="field-error">{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="terms-row">
+          <input type="checkbox" id="terms" name="terms" required />
+          <label for="terms">
+            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. No spam, ever.
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn--gradient">Create My Free Account →</button>
+      </form>
+
+      <p class="form-footer-link">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+    </div>
+  </div>
+
+{% endblock body_content %}
+
+{% block scripts %}
+<script>
+  function checkStrength(val) {
+    const fill  = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 8)           score++;
+    if (/[A-Z]/.test(val))         score++;
+    if (/[0-9]/.test(val))         score++;
+    if (/[^A-Za-z0-9]/.test(val))  score++;
+    const levels = [
+      { w: '0%',   color: 'transparent', text: 'Enter a password' },
+      { w: '25%',  color: '#f87171',     text: 'Weak' },
+      { w: '50%',  color: '#fbbf24',     text: 'Fair' },
+      { w: '75%',  color: '#60a5fa',     text: 'Good' },
+      { w: '100%', color: '#34d399',     text: 'Strong 💪' },
+    ];
+    const lvl = levels[score];
+    fill.style.width      = lvl.w;
+    fill.style.background = lvl.color;
+    label.textContent     = lvl.text;
+    label.style.color     = lvl.color === 'transparent' ? 'var(--muted)' : lvl.color;
+  }
+
+  const quotes = [
+    { text: '"The more that you read, the more things you will know. The more that you learn, the more places you\'ll go."', author: '— Dr. Seuss' },
+    { text: '"An investment in knowledge pays the best interest."', author: '— Benjamin Franklin' },
+    { text: '"Live as if you were to die tomorrow. Learn as if you were to live forever."', author: '— Mahatma Gandhi' },
+    { text: '"The beautiful thing about learning is that no one can take it away from you."', author: '— B.B. King' },
+    { text: '"Education is not the filling of a pail, but the lighting of a fire."', author: '— W.B. Yeats' },
+    { text: '"Tell me and I forget. Teach me and I remember. Involve me and I learn."', author: '— Benjamin Franklin' },
+  ];
+  let current = 0;
+  const textEl = document.getElementById('quoteText');
+  const authEl = document.getElementById('quoteAuthor');
+  const dotsEl = document.getElementById('quoteDots');
+
+  function renderDots() {
+    dotsEl.innerHTML = '';
+    quotes.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'quote-dot' + (i === current ? ' active' : '');
+      d.onclick = () => goTo(i);
+      dotsEl.appendChild(d);
+    });
+  }
+  function goTo(idx) {
+    textEl.style.opacity = '0';
+    authEl.style.opacity = '0';
+    setTimeout(() => {
+      current = idx;
+      textEl.textContent = quotes[current].text;
+      authEl.textContent = quotes[current].author;
+      textEl.style.opacity = '1';
+      authEl.style.opacity = '1';
+      renderDots();
+    }, 300);
+  }
+  renderDots();
+  setInterval(() => goTo((current + 1) % quotes.length), 5000);
+</script>
+{% endblock scripts %}

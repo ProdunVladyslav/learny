@@ -1,0 +1,940 @@
+/* ============================================================
+   flashcards — unified design system
+   ============================================================
+   Sections:
+     1. Reset & Base
+     2. CSS Variables (Design Tokens)
+     3. Typography
+     4. Layout Primitives
+     5. Orbs / Ambient FX
+     6. Auth Pages (login + signup shared)
+     7. Left Branding Panel
+       7a. Login variant
+       7b. Signup variant (features, quote rotator)
+     8. Right Form Panel
+     9. Form Components
+    10. Password Strength
+    11. Buttons
+    12. Badges
+    13. Dividers & Links
+    14. Error / Alert Boxes
+    15. Dashboard — Sidebar
+    16. Dashboard — Main Layout
+    17. Dashboard — Top Bar
+    18. Dashboard — Stat Cards
+    19. Dashboard — Content Grid & Cards
+    20. Dashboard — Deck List
+    21. Dashboard — Activity Feed
+    22. Animations
+    23. Responsive
+   ============================================================ */
+
+
+/* ── 1. RESET & BASE ─────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ── 2. CSS VARIABLES (DESIGN TOKENS) ────────────────────── */
+
+:root {
+  /* Surfaces */
+  --bg:         #0a0a0f;
+  --panel:      #111118;
+  --input-bg:   #16161f;
+  --border:     #1e1e2e;
+
+  /* Brand palette */
+  --accent:     #6c63ff;
+  --accent2:    #a78bfa;
+
+  /* Semantic colours */
+  --green:      #34d399;
+  --amber:      #fbbf24;
+  --red:        #f87171;
+  --error:      #ff6b6b;
+
+  /* Text */
+  --text:       #f0f0f8;
+  --muted:      #6b6b8a;
+
+  /* Layout */
+  --sidebar-w:  240px;
+  --radius-sm:  8px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+}
+
+
+/* ── 3. TYPOGRAPHY ───────────────────────────────────────── */
+
+/* Import in each HTML <head>:
+   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"> */
+
+.font-display { font-family: 'Syne', sans-serif; }
+.font-body    { font-family: 'DM Sans', sans-serif; }
+
+h1, h2, h3, .brand,
+.stat-value, .form-card h2, .topbar h1 {
+  font-family: 'Syne', sans-serif;
+}
+
+
+/* ── 4. LAYOUT PRIMITIVES ────────────────────────────────── */
+
+/* Auth pages: two-column split */
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* Dashboard: sidebar + main */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+
+/* ── 5. ORBS / AMBIENT FX ────────────────────────────────── */
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* Login orbs */
+.orb-login-1 {
+  width: 420px; height: 420px;
+  background: #6c63ff;
+  top: -100px; left: -100px;
+  opacity: 0.35;
+}
+.orb-login-2 {
+  width: 300px; height: 300px;
+  background: #a78bfa;
+  bottom: 50px; right: -80px;
+  opacity: 0.35;
+}
+
+/* Signup orbs */
+.orb-signup-1 {
+  width: 500px; height: 500px;
+  background: #6c63ff;
+  top: -150px; right: -150px;
+  opacity: 0.3;
+  filter: blur(90px);
+}
+.orb-signup-2 {
+  width: 280px; height: 280px;
+  background: #34d399;
+  bottom: 80px; left: -60px;
+  opacity: 0.3;
+  filter: blur(90px);
+}
+.orb-signup-3 {
+  width: 200px; height: 200px;
+  background: #a78bfa;
+  bottom: 300px; right: 50px;
+  opacity: 0.2;
+  filter: blur(90px);
+}
+
+
+/* ── 6. AUTH PAGES — SHARED ──────────────────────────────── */
+
+.left {
+  position: relative;
+  overflow: hidden;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+
+/* ── 7A. LEFT PANEL — LOGIN VARIANT ──────────────────────── */
+
+.left--login {
+  justify-content: space-between;
+}
+
+/* Hero headline */
+.hero-text h1 {
+  font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.2rem;
+}
+.hero-text h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-text p {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 320px;
+}
+
+/* Stats row (login footer) */
+.stats {
+  display: flex;
+  gap: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+.stat-item strong {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.stat-item span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+
+/* ── 7B. LEFT PANEL — SIGNUP VARIANT ────────────────────── */
+
+.left--signup {
+  gap: 2.5rem;
+}
+
+/* Eyebrow + tagline */
+.tagline {
+  position: relative;
+  z-index: 1;
+}
+.tagline .eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+.tagline h2 {
+  font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+.tagline h2 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tagline p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 340px;
+}
+
+/* Feature cards */
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+  z-index: 1;
+}
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.feature-item:hover {
+  border-color: rgba(108,99,255,0.3);
+  background: rgba(108,99,255,0.05);
+}
+.feature-icon {
+  font-size: 1.2rem;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.feature-text strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.feature-text span {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Quote rotator */
+.quote-block {
+  position: relative;
+  z-index: 1;
+  border-left: 2px solid var(--accent);
+  padding: 0.8rem 1.2rem;
+  background: rgba(108,99,255,0.05);
+  border-radius: 0 10px 10px 0;
+  min-height: 80px;
+}
+.quote-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+  font-style: italic;
+  margin-bottom: 0.4rem;
+  transition: opacity 0.4s ease;
+}
+.quote-author {
+  font-size: 0.75rem;
+  color: var(--accent2);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: opacity 0.4s ease;
+}
+.quote-dots {
+  display: flex;
+  gap: 5px;
+  margin-top: 0.7rem;
+}
+.quote-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.quote-dot.active { background: var(--accent2); }
+
+
+/* ── 8. RIGHT FORM PANEL ─────────────────────────────────── */
+
+.form-card {
+  width: 100%;
+  max-width: 400px;
+  animation: fadeUp 0.5s ease both;
+  padding: 1rem 0;
+}
+
+.form-card h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+.form-card .sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+
+/* ── 9. FORM COMPONENTS ──────────────────────────────────── */
+
+.field {
+  margin-bottom: 1rem;
+}
+.field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.82rem 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  appearance: none;
+}
+.field input:focus,
+.field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+}
+.field input::placeholder { color: var(--muted); }
+.field select option { background: var(--panel); }
+
+/* Two-column name row */
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Remember-me / forgot row */
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.8rem;
+  margin-top: -0.4rem;
+}
+.row-between label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.row-between a {
+  font-size: 0.85rem;
+  color: var(--accent2);
+  text-decoration: none;
+}
+.row-between a:hover { text-decoration: underline; }
+
+/* Terms checkbox row */
+.terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+  margin-top: 0.4rem;
+}
+.terms-row input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.terms-row label {
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.terms-row a { color: var(--accent2); text-decoration: none; }
+.terms-row a:hover { text-decoration: underline; }
+
+/* Inline field error */
+.field-error {
+  color: var(--error);
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+
+/* ── 10. PASSWORD STRENGTH ───────────────────────────────── */
+
+.strength-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+.strength-fill {
+  height: 100%;
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.strength-label {
+  font-size: 0.73rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  transition: color 0.3s;
+}
+
+
+/* ── 11. BUTTONS ─────────────────────────────────────────── */
+
+/* Primary CTA (solid accent) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn:hover {
+  background: #5a52e0;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(108,99,255,0.35);
+}
+.btn:active { transform: translateY(0); }
+
+/* Gradient variant (signup) */
+.btn--gradient {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+}
+.btn--gradient:hover {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  opacity: 0.9;
+}
+
+/* Small inline button (dashboard) */
+.btn--sm {
+  width: auto;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.88rem;
+  border-radius: var(--radius-sm);
+}
+
+
+/* ── 12. BADGES ──────────────────────────────────────────── */
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  display: inline-block;
+}
+.badge--green  { background: rgba(52,211,153,0.12);  color: var(--green); }
+.badge--amber  { background: rgba(251,191,36,0.12);  color: var(--amber); }
+.badge--red    { background: rgba(248,113,113,0.12); color: var(--red);   }
+.badge--purple { background: rgba(108,99,255,0.12);  color: var(--accent2); }
+
+
+/* ── 13. DIVIDERS & LINKS ────────────────────────────────── */
+
+/* "or" divider */
+.divider {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 1.5rem 0;
+  position: relative;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: var(--border);
+}
+.divider::before { left: 0; }
+.divider::after  { right: 0; }
+
+/* Section label divider */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.2rem 0 1rem;
+}
+.section-divider hr {
+  flex: 1;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+.section-divider span {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Footer link lines */
+.form-footer-link {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-top: 1.3rem;
+}
+.form-footer-link a {
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 500;
+}
+.form-footer-link a:hover { text-decoration: underline; }
+
+
+/* ── 14. ERROR / ALERT BOXES ─────────────────────────────── */
+
+.error-box {
+  background: rgba(255,107,107,0.08);
+  border: 1px solid rgba(255,107,107,0.3);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: var(--error);
+  font-size: 0.88rem;
+  margin-bottom: 1.2rem;
+}
+
+
+/* ── 15. DASHBOARD — SIDEBAR ─────────────────────────────── */
+
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.8rem 1.2rem;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  padding: 0 0.6rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+/* Auth left panel uses larger brand */
+.left .brand { font-size: 1.4rem; }
+.brand span  { color: var(--accent2); }
+
+.nav-section {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0.6rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1.2rem;
+}
+.nav-section:first-of-type { margin-top: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 2px;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+}
+.nav-item.active {
+  background: rgba(108,99,255,0.15);
+  color: var(--accent2);
+}
+.nav-item .icon {
+  font-size: 1rem;
+  width: 1.2rem;
+  text-align: center;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 1.2rem;
+}
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+}
+.avatar {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.user-info strong { display: block; font-size: 0.88rem; font-weight: 600; }
+.user-info span   { font-size: 0.75rem; color: var(--muted); }
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+  margin-top: 4px;
+}
+.logout-btn:hover {
+  background: rgba(248,113,113,0.1);
+  color: var(--red);
+}
+
+
+/* ── 16. DASHBOARD — MAIN LAYOUT ─────────────────────────── */
+
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 2.5rem;
+  max-width: 100%;
+}
+
+
+/* ── 17. DASHBOARD — TOP BAR ─────────────────────────────── */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+.topbar h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.topbar h1 span { color: var(--muted); font-weight: 400; }
+
+
+/* ── 18. DASHBOARD — STAT CARDS ──────────────────────────── */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.3rem 1.4rem;
+  animation: fadeUp 0.4s ease both;
+}
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.10s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+.stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+
+/* ── 19. DASHBOARD — CONTENT GRID & CARDS ────────────────── */
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.2rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.6rem;
+  animation: fadeUp 0.4s ease 0.25s both;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+.card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.card-header a { font-size: 0.82rem; color: var(--accent2); text-decoration: none; }
+.card-header a:hover { text-decoration: underline; }
+
+
+/* ── 20. DASHBOARD — DECK LIST ───────────────────────────── */
+
+.deck-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.deck-item:last-child { border-bottom: none; }
+
+.deck-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.deck-info { flex: 1; }
+.deck-info strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.deck-info span { font-size: 0.78rem; color: var(--muted); }
+
+.progress-bar-wrap {
+  width: 80px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.progress-pct {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+
+/* ── 21. DASHBOARD — ACTIVITY FEED ───────────────────────── */
+
+.activity-item {
+  display: flex;
+  gap: 0.9rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.activity-item:last-child { border-bottom: none; }
+
+.activity-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.activity-text strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.activity-text span { font-size: 0.78rem; color: var(--muted); }
+
+
+/* ── 22. ANIMATIONS ──────────────────────────────────────── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Auth form gets a slightly taller lift */
+.form-card { animation: fadeUpAuth 0.5s ease both; }
+@keyframes fadeUpAuth {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── 23. RESPONSIVE ──────────────────────────────────────── */
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .stats-grid    { grid-template-columns: repeat(2, 1fr); }
+  .content-grid  { grid-template-columns: 1fr; }
+}
+
+/* Hide left auth panel on small screens */
+@media (max-width: 900px) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .left        { display: none; }
+}
+
+/* Old login breakpoint fallback */
+@media (max-width: 768px) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .left        { display: none; }
+  .sidebar     { display: none; }
+  .main        { margin-left: 0; padding: 1.5rem; }
+}

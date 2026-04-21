@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}flashcards{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    {% block style %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{# Comment #}
+{% comment %}
+Block Comment
+{% endcomment %}
+{% block body_content %}
+<div class="wrapper">
+    <header>
+        {% block header %}
+            {% include "core/includes/header.html" %}
+        {% endblock header %}
+    </header>
+    <main>
+        {% block main %}
+        {% endblock main %}
+    </main>
+    <footer>
+        {% block footer %}
+            {% include "core/includes/footer.html" %}
+        {% endblock footer %}
+    </footer>
+</div>
+{% endblock body_content %}
+{% block scripts %}
+{% endblock scripts %}
+</body>
+</html>
