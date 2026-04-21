@@ -14,12 +14,11 @@ class JWTAuthMiddleware:
 
         if token:
             try:
-                validated = AccessToken(token)         # validates + decodes
+                validated = AccessToken(token)
                 user_id   = validated['user_id']
                 request.user = User.objects.get(id=user_id)
             except (InvalidToken, TokenError, User.DoesNotExist):
                 request.user = AnonymousUser()
-        else:
-            request.user = AnonymousUser()
+        # ← no else branch — let AuthenticationMiddleware handle it
 
         return self.get_response(request)

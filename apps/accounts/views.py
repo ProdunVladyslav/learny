@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth import login, get_user_model, authenticate
+from django.contrib.auth import login, get_user_model, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -63,9 +63,10 @@ class SignupForm(UserCreationForm):
         fields = ['email', 'username', 'password1', 'password2']
 
 def logout_view(request):
+    logout(request)
     response = redirect('login')
-    response.delete_cookie('access_token')
-    response.delete_cookie('refresh_token')
+    response.set_cookie('access_token', '', max_age=0, path='/', httponly=True, samesite='Lax')
+    response.set_cookie('refresh_token', '', max_age=0, path='/', httponly=True, samesite='Lax')
     return response
 
 def signup(request):
