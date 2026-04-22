@@ -3,6 +3,14 @@ from django.utils import timezone
 
 
 class CardProgress(models.Model):
+    """
+    Aggregate Root — spaced repetition state for one (learner, flashcard) pair.
+
+    Tracks how well a user knows a card and when they should see it next.
+    SM-2 calculation lives in SpacedRepetitionService — this model only
+    stores the result and exposes pure reads on its own state.
+    """
+
     user = models.ForeignKey(
         'accounts.LanguageLearner',
         on_delete=models.CASCADE,
@@ -22,37 +30,41 @@ class CardProgress(models.Model):
     class Meta:
         unique_together = ('user', 'flashcard')
 
-    @classmethod
-    def get_or_create_for(cls, user, flashcard) -> 'CardProgress':
-        record, _ = cls.objects.get_or_create(user=user, flashcard=flashcard)
-        return record
+    # ── Mutations (do NOT save — caller/use case is responsible) ─────────────
 
     def apply_spaced(
         self,
-        repetitions: int,
-        ease_factor: float,
+        repetitions:   int,
+        ease_factor:   float,
         interval_days: int,
         next_review,
     ) -> None:
-        """Does NOT save — caller is responsible."""
+        """
+        Applies SM-2 result to self.
+        Calculation lives in SpacedRepetitionService — this just stores it.
+        ease_factor floored at 1.3 — SM-2 algorithm minimum, enforced here
+        as a domain invariant so corrupt values can never be stored.
+        """
         self.repetitions   = repetitions
-        self.ease_factor   = ease_factor
+        self.ease_factor   = max(1.3, ease_factor)
         self.interval_days = interval_days
         self.next_review   = next_review
         self.last_seen_at  = timezone.now()
 
     def apply_cram(self, ease_factor: float) -> None:
-        """Does NOT save — caller is responsible."""
-        self.ease_factor  = ease_factor
+        """Does NOT save — caller responsible."""
+        self.ease_factor  = max(1.3, ease_factor)
         self.last_seen_at = timezone.now()
 
     def reset(self) -> None:
-        """Does NOT save — caller is responsible."""
+        """Does NOT save — caller responsible."""
         self.repetitions   = 0
         self.ease_factor   = 2.5
         self.interval_days = 0
         self.next_review   = None
         self.last_seen_at  = None
+
+    # ── Queries — pure reads on own state ────────────────────────────────────
 
     @property
     def is_new(self) -> bool:
@@ -69,10 +81,14 @@ class CardProgress(models.Model):
         return self.repetitions >= 5 and self.ease_factor >= 2.7
 
     @property
-    def get_strength(self) -> int:
-        MAX_REPS  = 10
-        MIN_EASE  = 1.3
-        MAX_EASE  = 4.0
+    def strength(self) -> int:
+        """
+        0–100 score representing how well the card is known.
+        Combines repetition count (60%) and ease factor (40%).
+        """
+        MAX_REPS   = 10
+        MIN_EASE   = 1.3
+        MAX_EASE   = 4.0
         rep_score  = min(self.repetitions / MAX_REPS, 1.0) * 60
         ease_score = max(0.0, (self.ease_factor - MIN_EASE) / (MAX_EASE - MIN_EASE)) * 40
         return round(rep_score + ease_score)

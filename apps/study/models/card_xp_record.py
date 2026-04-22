@@ -7,55 +7,69 @@ from apps.study.constants import CARD_XP_CAP
 
 
 class CardXPRecord(models.Model):
+    """
+    Entity inside CardProgress aggregate.
+    Tracks XP earned per card to enforce per-card XP caps.
+    Prevents grinding — a user can't earn infinite XP from one easy card.
+    """
+
     progress = models.OneToOneField(
-        'study.CardProgress',
+        'CardProgress',
         on_delete=models.CASCADE,
-        related_name='xp_record'
+        related_name='xp_record',
     )
     total_xp_earned = models.IntegerField(default=0)
     last_studied_at = models.DateTimeField(null=True, blank=True)
 
-    # Convenience accessors — no redundant FKs
+    # ── Convenience accessors ─────────────────────────────────────────────────
+
     @property
     def learner(self):
-        return self.progress.learner  # once CardProgress uses LanguageLearner
+        """
+        LanguageLearner — accessed through CardProgress.
+        Named `user` on the FK but exposed as `learner` for clarity.
+        """
+        return self.progress.user
 
     @property
     def card(self):
         return self.progress.flashcard
+
+    # ── Factory ──────────────────────────────────────────────────────────────
 
     @classmethod
     def get_or_create_record(cls, progress: 'CardProgress') -> 'CardXPRecord':
         record, _ = cls.objects.get_or_create(progress=progress)
         return record
 
-    # --- Querying ---
+    # ── Queries ──────────────────────────────────────────────────────────────
 
-    def remaining_xp_capacity(self, cap: int) -> int:
-        """How much XP this card can still give."""
-        return max(0, cap - self.total_xp_earned)
+    def remaining_xp_capacity(self) -> int:
+        """How much XP this card can still award. Cap is a domain constant."""
+        return max(0, CARD_XP_CAP - self.total_xp_earned)
 
-    def is_capped(self, cap: int) -> bool:
-        """Whether this card has reached its XP limit."""
-        return self.total_xp_earned >= cap
+    def is_capped(self) -> bool:
+        return self.total_xp_earned >= CARD_XP_CAP
 
     def is_cap_expired(self, reset_after_days: int = 30) -> Optional[bool]:
         """
         True if enough time has passed to reset the cap.
         Allows old vocabulary to reward XP again after a long break.
+        Returns None if card has never been studied.
         """
         if not self.last_studied_at:
             return None
         return (timezone.now() - self.last_studied_at).days >= reset_after_days
 
-    # --- Mutations ---
+    # ── Mutations (do NOT save — caller/use case is responsible) ─────────────
 
     def add_xp(self, amount: int) -> int:
         """
-        Adds XP, respecting the cap. Returns actual XP awarded.
-        Does NOT save — caller is responsible for save().
+        Adds XP respecting the per-card cap.
+        Returns actual XP awarded (may be less than amount if near cap).
+        Does NOT save — caller responsible.
         """
-        allowed = self.remaining_xp_capacity(cap=CARD_XP_CAP)
+        allowed = self.remaining_xp_capacity()
         awarded = min(amount, allowed)
         self.total_xp_earned += awarded
         self.last_studied_at  = timezone.now()
@@ -63,8 +77,8 @@ class CardXPRecord(models.Model):
 
     def reset_cap(self) -> None:
         """
-        Resets the card's XP cap (e.g. after 30-day break).
-        Does NOT save — caller is responsible for save().
+        Resets the card's XP cap after a long break.
+        Does NOT save — caller responsible.
         """
         self.total_xp_earned = 0
         self.last_studied_at = None

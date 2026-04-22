@@ -1,19 +1,34 @@
-from django.db import models
+from typing import TYPE_CHECKING
 
-from apps.languages.models import ProficiencyLevel
-from config import settings
+from django.db import models
+from django.utils import timezone
+
+if TYPE_CHECKING:
+    from apps.accounts.models.custom_user import CustomUser
+    from apps.languages.models import Language, ProficiencyLevel
 
 
 class LanguageLearner(models.Model):
+    """
+    Entity — represents a User's enrollment in a specific Language.
+
+    Bridges the Accounts and Study bounded contexts.
+    XP and level live here because progression belongs to the learner,
+    not to the study session (sessions are temporary, progress is permanent).
+
+    XP logic, level checking, and event creation live in XPAwardService.
+    This model only holds state and exposes simple state toggles.
+    """
+
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        'CustomUser',
         on_delete=models.CASCADE,
-        related_name='language_learners'
+        related_name='user_languages',
     )
     language = models.ForeignKey(
         'languages.Language',
         on_delete=models.CASCADE,
-        related_name='language_learners'
+        related_name='language_learners',
     )
     xp = models.IntegerField(default=0)
     current_level = models.ForeignKey(
@@ -23,33 +38,29 @@ class LanguageLearner(models.Model):
         blank=True,
         related_name='+',
     )
-    is_active = models.BooleanField(default=True)
-    enrolled_at = models.DateTimeField(blank=True, null=True)
+    is_active   = models.BooleanField(default=True)
+    enrolled_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ('user', 'language')
 
+    # ── Factory ──────────────────────────────────────────────────────────────
+
     @classmethod
-    def create(cls, user, language) -> 'LanguageLearner':
-        return cls.objects.create(user=user, language=language)
+    def create(cls, user: 'CustomUser', language: 'Language') -> 'LanguageLearner':
+        return cls.objects.create(
+            user=user,
+            language=language,
+            enrolled_at=timezone.now(),
+        )
 
-    def apply_xp_delta(self, xp_delta: int) -> bool:
-        old_level = self.current_level
-        self.xp = max(0, min(10_000, self.xp + xp_delta))
-        new_level = ProficiencyLevel.get_for_xp(self.xp)
-        level_changed = old_level != new_level
-        if level_changed:
-            self.current_level = new_level
-        return level_changed
+    # ── Mutations (do NOT save — caller/use case is responsible) ─────────────
 
-    def activate(self):
+    def activate(self) -> None:
         self.is_active = True
-        self.save(update_fields=['is_active'])
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         self.is_active = False
-        self.save(update_fields=['is_active'])
 
-    # dunder
-    def __str__(self):
-        return f"{self.user.username} {self.language.name}"
+    def __str__(self) -> str:
+        return f"{self.user.username} → {self.language.name}"
