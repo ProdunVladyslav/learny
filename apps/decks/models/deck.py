@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 
 from apps.accounts.models import CustomUser
@@ -11,10 +13,16 @@ class Deck(models.Model):
         related_name='decks'
     )
     owner_id: int
-    language = models.ForeignKey(
+    language_from = models.ForeignKey(
         'languages.Language',
         on_delete=models.PROTECT,
-        related_name='+'
+        related_name='+',
+        null=True, blank=True,
+    )
+    language_to = models.ForeignKey(
+        'languages.Language',
+        on_delete=models.PROTECT,
+        related_name='+',
     )
     title = models.CharField(max_length=30)
     description = models.TextField(blank=True)
@@ -25,10 +33,11 @@ class Deck(models.Model):
     flashcards: 'QuerySet[Flashcard]'
 
     @classmethod
-    def create(cls, owner, language, title: str) -> 'Deck':
+    def create(cls, owner, language_to, title: str, language_from=None) -> 'Deck':
         return cls.objects.create(
             owner=owner,
-            language=language,
+            language_to=language_to,
+            language_from=language_from,
             title=title,
         )
 
@@ -41,16 +50,13 @@ class Deck(models.Model):
             self.is_public = is_public
 
     def clone_for(self, user: CustomUser) -> 'Deck':
-        """
-        Creates a copy of this deck for another user.
-        Does NOT save — caller is responsible.
-        """
         return Deck(
             owner=user,
-            language=self.language,
+            language_to=self.language_to,
+            language_from=self.language_from,
             title=f'{self.title} (copy)',
             description=self.description,
-            is_public=False,  # clone starts private
+            is_public=False,
             is_generated=False,
         )
 
@@ -59,6 +65,16 @@ class Deck(models.Model):
 
     def is_owned_by(self, user) -> bool:
         return self.owner_id == user.id
+
+    @property
+    def language_to_code(self) -> str:
+        return self.language_to.code
+
+    @property
+    def language_from_code(self) -> Optional[str]:
+        if self.language_from_id is None:
+            return None
+        return self.language_from.code
 
     def __str__(self) -> str:
         return self.title

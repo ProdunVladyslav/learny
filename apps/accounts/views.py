@@ -1,14 +1,17 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
+from django.views import View
 
-from apps.accounts.decorators import jwt_required
-from apps.accounts.forms import SignupForm
-from apps.accounts.repositories import UserRepository
+from apps.accounts.forms.auth_forms import LoginForm, SignupForm
+from apps.accounts.forms.language_learner_forms import CreateLanguageLearnerForm
+from apps.accounts.repositories import UserRepository, LanguageLearnerRepository
 from apps.accounts.services.token_service import TokenService
 from apps.accounts.use_cases import (
     LoginUseCase,
     LogoutUseCase,
     SignupUseCase,
 )
+from apps.accounts.use_cases.language_learners.create_language_learner_use_case import CreateLanguageLearnerUseCase
 
 
 # ── Helpers — instantiate dependencies ───────────────────────────────────────
@@ -22,51 +25,33 @@ def _logout_use_case() -> LogoutUseCase: return LogoutUseCase()
 
 # ── Views ─────────────────────────────────────────────────────────────────────
 
-@jwt_required
-def dashboard(request):
-    return render(request, 'core/pages/dashboard.html')
-
-
-def root_redirect(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-    return redirect('login')
-
-
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('core:dashboard')
 
-    if request.method != 'POST':
-        return render(request, 'core/pages/registration/login.html')
+    form = LoginForm(request.POST or None)
 
-    result = _login_use_case().execute(
-        request,
-        username=request.POST.get('username'),
-        password=request.POST.get('password'),
-    )
-
-    if not result.success:
-        return render(
+    if request.method == 'POST' and form.is_valid():
+        result = _login_use_case().execute(
             request,
-            'core/pages/registration/login.html',
-            {'error': result.error},
+            username=form.cleaned_data['username'],
+            password=form.cleaned_data['password'],
         )
+        if result.success:
+            access, refresh = TokenService.generate_tokens(result.user)
+            response = redirect('core:dashboard')
+            TokenService.set_auth_cookies(
+                response, access, refresh,
+                remember_me=form.cleaned_data['remember_me'],
+            )
+            return response
+        form.add_error(None, result.error)
 
-    access, refresh = TokenService.generate_tokens(result.user)
-    response        = redirect('dashboard')
-    TokenService.set_auth_cookies(
-        response,
-        access,
-        refresh,
-        remember_me=bool(request.POST.get('remember_me')),
-    )
-    return response
-
+    return render(request, 'accounts/login.html', {'form': form})
 
 def logout_view(request):
     _logout_use_case().execute(request)
-    response = redirect('login')
+    response = redirect('accounts:login')
     TokenService.clear_auth_cookies(response)
     return response
 
@@ -79,8 +64,15 @@ def signup(request):
 
         if result.success:
             access, refresh = TokenService.generate_tokens(result.user)
-            response        = redirect('dashboard')
+            response        = redirect('core:dashboard')
             TokenService.set_auth_cookies(response, access, refresh)
             return response
 
-    return render(request, 'core/pages/registration/signup.html', {'form': form})
+    return render(request, 'accounts/signup.html', {'form': form})
+
+class LanguageLearnerCreateView(LoginRequiredMixin, View):
+    def post(self, request):
+        form = CreateLanguageLearnerForm(request.POST)
+        CreateLanguageLearnerUseCase(LanguageLearnerRepository()).execute(request.user, form)
+        next_url = request.POST.get('next') or 'core:dashboard'
+        return redirect(next_url)

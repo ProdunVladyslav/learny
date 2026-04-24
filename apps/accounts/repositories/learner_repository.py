@@ -10,10 +10,17 @@ class LanguageLearnerRepository(BaseRepository[LanguageLearner]):
 
     # ── Queries ───────────────────────────────────────────────────────────────
 
+    def get_by_id(self, ll_id: int) -> LanguageLearner | None:
+        return (
+            self._model.objects
+            .select_related('language_to', 'language_from', 'current_level')
+            .filter(pk=ll_id).first()
+        )
+
     def get_active_for_user(self, user: CustomUser) -> LanguageLearner | None:
         return (
             self._model.objects
-            .select_related('language', 'current_level')
+            .select_related('language_to', 'language_from', 'current_level')
             .filter(user=user, is_active=True)
             .first()
         )
@@ -21,31 +28,44 @@ class LanguageLearnerRepository(BaseRepository[LanguageLearner]):
     def get_all_for_user(self, user: CustomUser) -> QuerySet[LanguageLearner]:
         return (
             self._model.objects
-            .select_related('language', 'current_level')
+            .select_related('language_to', 'language_from', 'current_level')
             .filter(user=user)
         )
 
     def get_with_survey(self, learner_id: int) -> LanguageLearner:
-        """Fetches learner + onboarding survey in one query."""
         return (
             self._model.objects
-            .select_related('onboarding_survey', 'language', 'current_level')
+            .select_related('onboarding_survey', 'language_to', 'language_from', 'current_level')
             .get(id=learner_id)
         )
 
-    def get_by_user_and_language(
+    def get_for_user_and_language(
         self,
         user: CustomUser,
-        language_id: int,
+        language_to_code: str,
     ) -> LanguageLearner | None:
-        return self._model.objects.filter(user=user, language_id=language_id).first()
+        return (
+            self._model.objects
+            .select_related('language_to', 'language_from')
+            .filter(user=user, language_to__code=language_to_code)
+            .first()
+        )
 
-    # ── Optimized writes ──────────────────────────────────────────────────────
+    def get_language_by_code(self, code: str):
+        from apps.languages.models import Language
+        return Language.objects.filter(code=code).first()
+
+    # ── Writes ────────────────────────────────────────────────────────────────
+
+    def save(self, ll: LanguageLearner) -> LanguageLearner:
+        ll.save()
+        return ll
+
+    def delete(self, ll: LanguageLearner) -> None:
+        ll.delete()
 
     def save_active_state(self, learner: LanguageLearner) -> LanguageLearner:
-        """Only updates is_active column — avoids overwriting XP on concurrent requests."""
         return self.save_fields(learner, ['is_active'])
 
     def save_xp_and_level(self, learner: LanguageLearner) -> LanguageLearner:
-        """Only updates XP and level — used after study session completion."""
-        return self.save_fields(learner, ['xp', 'current_level'])
+        return self.save_fields(learner, ['xp', 'current_level_id'])

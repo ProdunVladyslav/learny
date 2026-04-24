@@ -1,12 +1,10 @@
-from unittest.mock import patch
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from apps.accounts.forms import SignupForm
 from apps.accounts.repositories import UserRepository
 from apps.accounts.use_cases import SignupUseCase
-from apps.accounts.use_cases.sign_up_use_case import SignupResult
+from apps.accounts.use_cases.auth.sign_up_use_case import SignupResult
 from shared.domain_events import UserRegistered
 from shared.event_bus import EventBus
 

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block body_content %}
+<body style="display:flex">
+  {% include "core/includes/header.html" %}
+  <main class="main">
+
+    <div class="topbar">
+      <h1>Good morning, <span>{{ request.user.username }}</span> 👋</h1>
+      <a href="{% url 'decks:list' %}" class="new-btn">▣ My Decks</a>
+    </div>
+
+    {% if no_learner %}
+    <!-- Empty state — no language pairs yet -->
+    <div style="display:flex;align-items:center;justify-content:center;min-height:50vh">
+      <div style="text-align:center;max-width:400px">
+        <div style="font-size:3rem;margin-bottom:1rem">🌍</div>
+        <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.75rem">Pick a language to start</h2>
+        <p style="color:var(--muted);font-size:0.95rem;margin-bottom:2rem;line-height:1.6">
+          Create your first language pair to begin building decks and tracking your progress.
+        </p>
+        <button class="btn" onclick="document.getElementById('ll-modal').style.display='flex'">
+          ＋ Add language pair
+        </button>
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Language pairs</div>
+        <div class="stat-value">{{ learners|length }}</div>
+        <span class="stat-badge badge-purple">active</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Decks</div>
+        <div class="stat-value">{{ decks|length }}</div>
+        <span class="stat-badge badge-green">across all pairs</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Due Today</div>
+        <div class="stat-value">—</div>
+        <span class="stat-badge badge-red">cards to review</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">XP</div>
+        <div class="stat-value">{{ learners.0.xp|default:"0" }}</div>
+        <span class="stat-badge badge-amber">total earned</span>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="card">
+        <div class="card-header">
+          <h3>My Decks</h3>
+          <a href="{% url 'decks:list' %}">View all →</a>
+        </div>
+        {% for deck in decks|slice:":6" %}
+        <div class="deck-item">
+          <div class="deck-dot" style="background:var(--accent)"></div>
+          <div class="deck-info">
+            <strong><a href="{% url 'decks:detail' deck.id %}" style="color:inherit;text-decoration:none">{{ deck.title }}</a></strong>
+            <span>{{ deck.card_count }} card{{ deck.card_count|pluralize }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <p style="color:var(--muted);font-size:0.9rem;padding:1rem 0">
+          No decks yet. <a href="{% url 'decks:list' %}" style="color:var(--accent2)">Create one →</a>
+        </p>
+        {% endfor %}
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Language pairs</h3>
+          <button onclick="document.getElementById('ll-modal').style.display='flex'"
+                  style="background:none;border:none;color:var(--accent2);font-size:0.82rem;cursor:pointer">＋ Add</button>
+        </div>
+        {% for ll in learners %}
+        <div class="deck-item">
+          <div class="deck-dot" style="background:var(--accent2)"></div>
+          <div class="deck-info">
+            <strong>
+              <a href="{% url 'decks:list' %}?language_to={{ ll.language_to_code }}" style="color:inherit;text-decoration:none">
+                {{ ll.language_to_name }}
+                {% if ll.language_from_name %}<span style="color:var(--muted);font-weight:400"> from {{ ll.language_from_name }}</span>{% endif %}
+              </a>
+            </strong>
+            <span>{{ ll.xp }} XP</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+</body>
+
+<!-- Add language pair modal -->
+<div id="ll-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:420px;position:relative">
+    <button onclick="document.getElementById('ll-modal').style.display='none'"
+            style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">✕</button>
+    <h3 style="margin-bottom:1.5rem">Add language pair</h3>
+    <form method="post" action="{% url 'accounts:add_language' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <div class="field">
+        <label>I want to learn</label>
+        <select name="language_to_code" required
+                style="width:100%;padding:0.8rem 1rem;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);font-size:0.9rem">
+          <option value="">Select…</option>
+          {% for lang in all_languages %}
+          <option value="{{ lang.code }}">{{ lang.flag_emoji }} {{ lang.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>My native language <span style="color:var(--muted);font-size:0.8rem">(optional)</span></label>
+        <select name="language_from_code"
+                style="width:100%;padding:0.8rem 1rem;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);font-size:0.9rem">
+          <option value="">None / mixed</option>
+          {% for lang in all_languages %}
+          <option value="{{ lang.code }}">{{ lang.flag_emoji }} {{ lang.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn">Add pair</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find C:/Users/produ/PycharmProjects/learny -path ./.venv -prune -o -name *.html -print)"
+      "Bash(find C:/Users/produ/PycharmProjects/learny -path ./.venv -prune -o -name *.html -print)",
+      "Bash(xargs grep *)",
+      "Bash(sed -i \"s|'decks/deck_list.html'|'decks/list.html'|g; s|'decks/deck_detail.html'|'decks/detail.html'|g\" /c/Users/produ/PycharmProjects/learny/apps/decks/views/deck_views.py)",
+      "Bash(sed -i \"s|'study/daily_review.html'|'study/review.html'|g\" /c/Users/produ/PycharmProjects/learny/apps/study/views/review_views.py)",
+      "Bash(.venv/Scripts/python.exe -c \"from apps.study.views.review_views import DailyReviewView, SubmitAnswerView; print\\('OK'\\)\")",
+      "Bash(DJANGO_SETTINGS_MODULE=config.settings .venv/Scripts/python.exe -c \"import django; django.setup\\(\\); from apps.study.views.review_views import DailyReviewView, SubmitAnswerView; print\\('OK'\\)\")",
+      "Bash(DJANGO_SETTINGS_MODULE=config.settings .venv/Scripts/python.exe -m manage check)"
     ]
   }
 }

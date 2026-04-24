@@ -1,6 +1,7 @@
 # apps/study/domain_services/xp_award_service.py
 from dataclasses import dataclass
 from apps.accounts.models import LanguageLearner
+from apps.study.constants import QuestionType
 from apps.study.models import CardXPRecord
 from shared.domain_events import LevelUpOccurred
 from shared.value_objects import XPAmount, ResponseTime
@@ -13,18 +14,36 @@ class XPAwardResult:
 
 
 class XPAwardService:
-    BASE_XP       = 10
-    CORRECT_BONUS = 5
-    FAST_BONUS    = 3
+    BASE_XP    = 10
+    FAST_BONUS = 3
 
-    def calculate_xp(self, is_correct: bool, response_time: ResponseTime) -> int:
+    # Multipliers per question type — harder modes reward more
+    MODE_MULTIPLIERS: dict[str, float] = {
+        QuestionType.MULTIPLE_CHOICE: 1.0,
+        QuestionType.TRUE_FALSE:      0.8,
+        QuestionType.MATCH:           1.0,
+        QuestionType.FILL_BLANK:      1.3,
+        QuestionType.LISTENING:       1.3,
+        QuestionType.WRITE_DOWN:      1.5,
+    }
+
+    def calculate_xp(
+        self,
+        is_correct:    bool,
+        response_time: ResponseTime,
+        mode:          str,
+    ) -> int:
         """Pure calculation — no DB, no side effects."""
         if not is_correct:
             return 0
-        xp = self.BASE_XP + self.CORRECT_BONUS
+
+        multiplier = self.MODE_MULTIPLIERS.get(mode, 1.0)
+        xp = self.BASE_XP * multiplier
+
         if response_time.is_fast:
             xp += self.FAST_BONUS
-        return xp
+
+        return round(xp)
 
     def award(
         self,

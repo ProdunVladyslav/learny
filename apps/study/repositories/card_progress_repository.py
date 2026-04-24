@@ -81,3 +81,29 @@ class CardProgressRepository(BaseRepository[CardProgress]):
     def save_xp_record(self, xp_record: CardXPRecord) -> CardXPRecord:
         xp_record.save()
         return xp_record
+
+    def get_due_and_new_for_today(
+            self,
+            learner: LanguageLearner,
+            deck_id: int | None = None,
+    ) -> tuple[QuerySet[CardProgress], QuerySet[CardProgress]]:
+        """
+        Returns (due_qs, new_qs) — both select_related so no extra queries
+        when building DTOs. Optionally scoped to a single deck.
+        """
+        base_filter = {'user': learner}
+        if deck_id is not None:
+            base_filter['flashcard__deck_id'] = deck_id
+
+        due_qs = (
+            self._model.objects
+            .filter(**base_filter, next_review__lte=timezone.now().date())
+            .select_related('flashcard', 'flashcard__deck')
+            .order_by('next_review')  # most overdue first
+        )
+        new_qs = (
+            self._model.objects
+            .filter(**base_filter, last_seen_at__isnull=True)
+            .select_related('flashcard', 'flashcard__deck')
+        )
+        return due_qs, new_qs

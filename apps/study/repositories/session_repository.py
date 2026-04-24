@@ -41,3 +41,14 @@ class StudySessionRepository(BaseRepository[StudySession]):
     def close_session(self, session: StudySession) -> StudySession:
         """Only writes ended_at — nothing else changes when closing."""
         return self.save_fields(session, ['ended_at'])
+
+    def save_learner(self, learner) -> None:
+        learner.save(update_fields=['xp', 'current_level'])
+
+    def dispatch(self, event) -> None:
+        import logging
+        logging.getLogger('events').info('%s: %s', type(event).__name__, event)
+
+    def dispatch_all(self, events: list) -> None:
+        for e in events:
+            self.dispatch(e)

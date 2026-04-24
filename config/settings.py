@@ -99,6 +99,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.accounts.context_processors.learners',
             ],
         },
     },
@@ -106,7 +107,8 @@ TEMPLATES = [
 
 # Where to go after login / logout
 LOGIN_REDIRECT_URL  = '/dashboard/'   # ← after successful login
-LOGOUT_REDIRECT_URL = '/login/'       # ← after logout
+LOGIN_URL = '/auth/login/'
+LOGOUT_REDIRECT_URL = '/auth/login/'
 
 WSGI_APPLICATION = 'config.wsgi.application'
 

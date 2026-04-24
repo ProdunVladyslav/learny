@@ -8,6 +8,12 @@ class StudyMode(models.TextChoices):
     SPACED = 'spaced', 'Spaced'
     CRAM   = 'cram',   'Cram'
 
+class AnswerRating(models.IntegerChoices):
+    BLACKOUT = 0, 'Blackout'
+    HARD     = 1, 'Hard'
+    GOOD     = 2, 'Good'
+    EASY     = 3, 'Easy'
+
 class QuestionType(models.TextChoices):
     MULTIPLE_CHOICE = 'multiple_choice', 'Multiple choice'  # pick correct answer from 4 options
     WRITE_DOWN      = 'write_down',      'Write down'       # type the answer manually

@@ -17,7 +17,8 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    # path('', views.root_redirect),
-    path('', include('apps.core.urls')),
-    path('', include('apps.accounts.urls')),
+    path('', include('apps.core.urls', namespace='core')),
+    path('auth/', include('apps.accounts.urls', namespace='accounts')),
+    path('decks/', include('apps.decks.urls', namespace='decks')),
+    path('study/', include('apps.study.urls', namespace='study')),
 ]

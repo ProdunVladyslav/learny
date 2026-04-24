@@ -30,7 +30,7 @@ from django.test import TestCase, RequestFactory
 
 from apps.accounts.repositories import UserRepository
 from apps.accounts.use_cases import LoginUseCase
-from apps.accounts.use_cases.login_use_case import LoginResult
+from apps.accounts.use_cases.auth.login_use_case import LoginResult
 
 User = get_user_model()
 
